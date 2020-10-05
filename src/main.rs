@@ -1,31 +1,34 @@
-use warp::Filter;
-use warp::{Reply, Rejection};
+use std::env;
+use serenity::{
+  client::Client
+};
+
+mod handler;
 
 #[tokio::main]
 async fn main() {
-    let hi = warp::path("hi").map(|| "hi.");
-    
-    // Match any request and return hello world!
-    let routes = warp::get()
-    .and(
-        hi.or(
-            hello().and(name()).and_then(greet_handler)
-        )
-    );
+  pretty_env_logger::init();
+  //dotenv().ok();
 
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
-}
+  let token = env::var("DISCORD_TOKEN")
+    .expect("Expected a token in the enviroment");
+  
+  println!("DISCODE_TOKEN {}",token);
 
-fn hello() -> warp::filters::BoxedFilter<()>{
-    warp::path("hello").boxed()
-}
+    // Create a new instance of the Client, logging in as a bot. This will
+    // automatically prepend your bot token with "Bot ", which is a requirement
+    // by Discord for bot users.
+    let mut client = Client::new(token)
+        .event_handler(handler::Handler)
+        .await
+        .expect("Err creating client");
 
-fn name() -> warp::filters::BoxedFilter<(String,)>{
-    warp::path::param().boxed()
-}
-
-async fn greet_handler(name:String) -> Result<impl Reply, Rejection>{
-    let reply = format!("hello {}", name);
-    Ok(warp::reply::html(reply))
+    // Finally, start a single shard, and start listening to events.
+    //
+    // Shards will automatically attempt to reconnect, and will perform
+    // exponential backoff until it reconnects.
+    if let Err(why) = client.start().await {
+        println!("Client error: {:?}", why);
+    }
 }
 
