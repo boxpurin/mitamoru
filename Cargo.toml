@@ -9,4 +9,14 @@ edition = "2018"
 [dependencies]
 pretty_env_logger = "0.4"
 tokio = { version ="0.2",features=["macros"]}
-warp = "0.2"
+
+[dependencies.serenity]
+default-features = false
+features = [
+    "client",
+    "gateway",
+    "model",
+    "rustls_backend",
+    "utils",
+]
+version = "0.9.0-rc.2"
